@@ -278,6 +278,8 @@ let photos = await withTaskGroup(of: Data.self) { group in
 
 ## Task Cancellation
 
+[https://developer.apple.com/videos/play/wwdc2021/10134/?time=595](https://developer.apple.com/videos/play/wwdc2021/10134/?time=595)
+
 Swift의 동시성은 협력적인(cooperative) 취소 모델을 사용합니다. 각 작업은 실행 중 적절한 시점에서 취소 여부를 확인하고, 취소된 경우 적절하게 대응합니다. 작업의 성격에 따라 취소에 대한 대응은 다음 중 하나일 수 있습니다:
 
 - `CancellationError`와 같은 오류를 발생시킴
@@ -286,9 +288,11 @@ Swift의 동시성은 협력적인(cooperative) 취소 모델을 사용합니다
 
 사진의 다운로드 작업은 사진이 크거나 네트워크가 느릴 경우 시간이 오래 걸릴 수 있습니다. 사용자가 모든 작업이 완료되기 전에 작업을 중단할 수 있도록, 각 작업은 취소 여부를 확인하고 취소된 경우 작업을 중단해야 합니다.
 
-작업이 이를 수행하는 방법은 두 가지가 있습니다. `Task.checkCancellation()` 타입 메서드를 호출하거나, Task.`isCancelled` 타입 프로퍼티를 읽는 것입니다.
+작업이 이를 수행하는 방법은 두 가지가 있습니다. `Task.checkCancellation()` 타입 메서드를 호출하거나, `Task.isCancelled` 타입 프로퍼티를 읽는 것입니다.
 
-`checkCancellation()`을 호출하면 작업이 취소된 경우 오류를 발생시키며 오류를 발생시키는 작업은 작업 외부로 오류를 전달하여 작업을 중단할 수 있습니다. 이 방법은 구현과 이해가 간단하다는 장점이 있습니다. 더 유연한 방법을 원한다면, `isCancelled` 프로퍼티를 사용하여 네트워크 연결을 종료하거나 임시 파일을 삭제하는 등의 정리 작업을 할 수 있습니다.
+`checkCancellation()`을 호출하면 작업이 취소된 경우 오류를 발생시키며 오류를 발생시키는 작업은 작업 외부로 오류를 전달하여 작업을 중단할 수 있습니다. 이 방법은 구현과 이해가 간단하다는 장점이 있습니다.
+
+더 유연한 방법을 원한다면, `isCancelled` 프로퍼티를 사용하여 네트워크 연결을 종료하거나 임시 파일을 삭제하는 등의 정리 작업을 할 수 있습니다.
 
 ```swift
 let photos = await withTaskGroup(of: Optional<Data>.self) { group in
@@ -311,10 +315,10 @@ let photos = await withTaskGroup(of: Optional<Data>.self) { group in
 
 위 코드에서는 이전 버전과 몇 가지 다른 점이 있습니다:
 
-- 각 작업은 `TaskGroup.addTaskUnlessCancelled(priority:operation:)` 메서드를 사용해 추가되어, 취소 후에 새 작업을 시작하지 않도록 합니다.
-- 각 `addTaskUnlessCancelled(priority:operation:)` 호출 후, 새 자식 작업이 추가되었는지 확인합니다. 그룹이 취소된 경우 `added`의 값이 `false`이므로, 이 경우 추가적인 사진 다운로드 시도를 중단합니다.
+- 각 작업은 `TaskGroup.addTaskUnlessCancelled(priority:operation:)` 메서드를 사용해 추가되어 취소 후에 새 작업을 시작하지 않도록 합니다.
+- 각 `addTaskUnlessCancelled(priority:operation:)` 호출 후, 새 자식 작업이 추가되었는지 확인합니다. 그룹이 취소된 경우 `added`의 값이 `false`이므로 이 경우 추가적인 사진 다운로드 시도를 중단합니다.
 - 각 작업은 사진을 다운로드하기 전에 취소 여부를 확인합니다. 취소된 경우 작업은 `nil`을 반환합니다.
-- 마지막에 작업 그룹은 결과를 수집할 때 nil 값을 건너뜁니다. 취소를 `nil`을 반환하는 방식으로 처리하면, 작업 그룹은 취소 시 이미 다운로드된 사진들을 반환할 수 있으며, 완료된 작업을 폐기하지 않고 부분 결과를 제공할 수 있습니다.
+- 마지막에 작업 그룹은 결과를 수집할 때 `nil` 값을 건너뜁니다. 취소를 `nil`을 반환하는 방식으로 처리하면, 작업 그룹은 취소 시 이미 다운로드된 사진들을 반환할 수 있으며, 완료된 작업을 폐기하지 않고 부분 결과를 제공할 수 있습니다.
 
 <aside> 💡
 
@@ -339,9 +343,7 @@ let task = await Task.withTaskCancellationHandler {
 task.cancel()  // Prints "Canceled!"
 ```
 
-취소 핸들러를 사용할 때도 작업 취소는 협력적입니다. 작업은 완료될 때까지 실행되거나, 취소 여부를 확인하고 조기에 중단됩니다.
-
-작업이 취소 핸들러가 시작될 때 여전히 실행 중일 수 있으므로, 작업과 취소 핸들러 간에 상태를 공유하는 것을 피해야 합니다. 이는 경쟁 조건을 발생시킬 수 있기 때문입니다.
+취소 핸들러를 사용할 때도 작업 취소는 협력적입니다. 작업은 완료될 때까지 실행되거나, 취소 여부를 확인하고 조기에 중단됩니다. 작업이 취소 핸들러가 시작될 때 여전히 실행 중일 수 있으므로 작업과 취소 핸들러 간에 상태를 공유하는 것을 피해야 합니다. 이는 경쟁 조건을 발생시킬 수 있기 때문입니다.
 
 ## Unstructured Concurrency
 
