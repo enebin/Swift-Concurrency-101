@@ -20,8 +20,23 @@
               "icon": "lucide-file",
               "title": "Swift Official Docs"
             }
+          },
+          {
+            "id": "4995c8b1c633f396",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Home/Swift Official Docs.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Swift Official Docs"
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -162,8 +177,11 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "cd3a1a9c99118f3c",
+  "active": "8de027066919585e",
   "lastOpenFiles": [
+    "Home/AsyncStream.md",
+    "Home/Untitled",
+    "Home/Swift Official Docs.md",
     "README.md",
     "Home.md"
   ]
